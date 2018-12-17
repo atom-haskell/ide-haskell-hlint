@@ -1,0 +1,53 @@
+{
+  "name": "ide-haskell-hlint",
+  "main": "./lib/main",
+  "version": "0.1.0",
+  "description": "Provides hlint checking for IDE-Haskell",
+  "keywords": [
+    "ide-haskell",
+    "ide",
+    "haskell",
+    "ghc-mod",
+    "backend"
+  ],
+  "repository": "https://github.com/atom-haskell/ide-haskell-hlint",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.24.0 <2.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "prettier": "prettier --write 'src/**/*.ts?(x)' 'spec/**/*.ts?(x)'",
+    "prettier-check": "prettier -l 'src/**/*.ts?(x)' 'spec/**/*.ts?(x)'",
+    "typecheck": "tsc --noEmit -p . && tsc --noEmit -p spec",
+    "lint": "tslint --project . && tslint --project spec",
+    "test": "npm run typecheck && npm run lint && npm run prettier-check"
+  },
+  "atomTestRunner": "./node_modules/atom-ts-spec-runner/runner.js",
+  "activationHooks": [
+    "language-haskell:grammar-used"
+  ],
+  "dependencies": {
+    "tslib": "^1.9.3"
+  },
+  "providedServices": {
+    "ide-haskell-upi-plugin": {
+      "versions": {
+        "0.3.1": "provideUPI"
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/atom": "~1.31.0",
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.15",
+    "atom-haskell-tslint-rules": "^0.2.2",
+    "atom-ts-spec-runner": "^1.1.1",
+    "chai": "^4.2.0",
+    "prettier": "^1.15.3",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "typescript": "~3.2.2"
+  }
+}
