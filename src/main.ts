@@ -2,6 +2,7 @@ import * as UPI from 'atom-haskell-upi'
 import * as CP from 'child_process'
 import * as Atom from 'atom'
 import * as Path from 'path'
+import { highlightCode } from './highlight'
 
 export { config } from './config'
 
@@ -29,7 +30,7 @@ type HLintResult = ReadonlyArray<HLintResultItem>
 interface HLintResultItem {
   module: string[]
   decl: string[]
-  severity: 'Suggestion'
+  severity: string
   hint: string
   file: string
   startLine: number
@@ -69,17 +70,28 @@ async function checkFile(
       )
     })
     console.log(res)
-    return res.map((hr) => ({
-      uri: Path.normalize(hr.file),
-      position: { row: hr.startLine - 1, column: hr.startColumn - 1 },
-      message: {
-        html:
-          `<p>${hr.hint}</p><p>Found: ${hr.from}</p>` +
-          (hr.to ? `<p>Why not: ${hr.to}</p>` : ''),
-      },
-      severity: 'lint',
-      context: hr.note.join(' '),
-    }))
+    return Promise.all(
+      res.map(async (hr) => ({
+        uri: Path.normalize(hr.file),
+        position: { row: hr.startLine - 1, column: hr.startColumn - 1 },
+        message: {
+          html:
+            `<p>${hr.hint}</p><p>Found:<pre>${await highlightCode(
+              hr.from,
+              'source.haskell',
+            )}</pre></p>` +
+            (hr.to
+              ? `<p>Why not:<pre>${await highlightCode(
+                  hr.to,
+                  'source.haskell',
+                )}</pre></p>`
+              : '') +
+            (hr.note.length ? `<p>Note: ${hr.note.join('<br>')}</p>` : ''),
+        },
+        severity: 'lint',
+        context: hr.severity,
+      })),
+    )
   } catch (e) {
     atom.notifications.addError(e.toString(), {
       detail: e.message,
