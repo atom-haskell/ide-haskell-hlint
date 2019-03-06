@@ -75,7 +75,6 @@ async function checkFile(
         },
       )
     })
-    console.log(res)
     return Promise.all(
       res.map(async (hr) => ({
         uri: Path.normalize(hr.file),
