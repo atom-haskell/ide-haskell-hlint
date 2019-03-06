@@ -65,7 +65,13 @@ async function checkFile(
         },
         (error, result) => {
           if (error && result === undefined) reject(error)
-          else resolve(JSON.parse(result as string))
+          else {
+            try {
+              resolve(JSON.parse(result as string))
+            } catch (e) {
+              reject(error)
+            }
+          }
         },
       )
     })
@@ -93,10 +99,23 @@ async function checkFile(
       })),
     )
   } catch (e) {
-    atom.notifications.addError(e.toString(), {
-      detail: e.message,
-      dismissable: true,
-    })
+    console.warn(e)
+    if (all) {
+      try {
+        return await checkFile(buf, false)
+      } catch (e) {
+        console.warn(e)
+        atom.notifications.addError(e.toString(), {
+          detail: e.message,
+          dismissable: true,
+        })
+      }
+    } else {
+      atom.notifications.addError(e.toString(), {
+        detail: e.message,
+        dismissable: true,
+      })
+    }
     return
   }
 }
