@@ -1,7 +1,7 @@
 {
   "name": "ide-haskell-hlint",
   "main": "./lib/main",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Provides standalone hlint support for IDE-Haskell",
   "keywords": [
     "ide-haskell",
