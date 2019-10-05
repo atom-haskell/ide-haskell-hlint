@@ -70,7 +70,7 @@ async function checkFile(
   try {
     const res = await new Promise<HLintResult>((resolve, reject) => {
       const cp = CP.execFile(
-        'hlint',
+        atom.config.get('ide-haskell-hlint').hlintPath,
         ['--json', '--cross', '--no-exit-code', '--', path],
         {
           encoding: 'utf-8',
