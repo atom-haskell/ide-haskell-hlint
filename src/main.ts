@@ -3,12 +3,17 @@ import * as CP from 'child_process'
 import * as Atom from 'atom'
 import * as Path from 'path'
 import { highlightCode } from './highlight'
+import { unlit } from 'atom-haskell-utils'
 
 export { config } from './config'
 
-export function activate(_state: never) {}
+export function activate(_state: never) {
+  /* no-op */
+}
 
-export function deactivate() {}
+export function deactivate() {
+  /* no-op */
+}
 
 export function provideUPI(): UPI.IRegistrationOptions {
   return {
@@ -28,8 +33,9 @@ export function provideUPI(): UPI.IRegistrationOptions {
             : 'file',
         ) as any,
       onDidStopChanging: (buf) => {
-        if (atom.config.get('ide-haskell-hlint').checkOnChange)
+        if (atom.config.get('ide-haskell-hlint').checkOnChange) {
           return checkFile(buf, 'stdin') as any
+        }
       },
     },
   }
@@ -57,7 +63,7 @@ async function checkFile(
   mode: 'dir' | 'file' | 'stdin',
 ): Promise<undefined | UPI.IResultItem[]> {
   const bufpath = buf.getPath()
-  if (!bufpath) return
+  if (!bufpath) return undefined
   const rootpath = atom.project
     .getDirectories()
     .find((d) => d.contains(bufpath))
@@ -78,8 +84,9 @@ async function checkFile(
           maxBuffer: Infinity,
         },
         (error, result) => {
-          if (error) reject(error)
-          else {
+          if (error) {
+            reject(error)
+          } else {
             try {
               resolve(JSON.parse(result as string))
             } catch (e) {
@@ -88,9 +95,23 @@ async function checkFile(
           }
         },
       )
+      // tslint:disable-next-line:totality-check
       if (mode === 'stdin') {
-        cp.stdin.write(buf.getText())
-        cp.stdin.end()
+        const bufPath = buf.getPath()
+        if (bufPath !== undefined && Path.extname(bufPath) === '.lhs') {
+          unlit(bufPath, buf.getText())
+            .then(function(text) {
+              cp.stdin.write(text)
+              cp.stdin.end()
+            })
+            .catch((e: Error) => {
+              reject(e)
+              cp.kill()
+            })
+        } else {
+          cp.stdin.write(buf.getText())
+          cp.stdin.end()
+        }
       }
     })
     return Promise.all(
@@ -133,6 +154,6 @@ async function checkFile(
         dismissable: true,
       })
     }
-    return
+    return undefined
   }
 }

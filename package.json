@@ -28,7 +28,8 @@
     "language-haskell:grammar-used"
   ],
   "dependencies": {
-    "tslib": "^1.10.0"
+    "atom-haskell-utils": "^1.0.2",
+    "tslib": "^1.11.1"
   },
   "providedServices": {
     "ide-haskell-upi-plugin": {
@@ -38,16 +39,17 @@
     }
   },
   "devDependencies": {
-    "@types/atom": "~1.36.1",
-    "@types/chai": "^4.2.3",
-    "@types/mocha": "^5.2.7",
+    "@types/atom": "~1.40.1",
+    "@types/chai": "^4.2.10",
+    "@types/mocha": "^7.0.2",
     "@types/node": "^10.12.15",
     "atom-haskell-tslint-rules": "^0.2.2",
     "atom-ts-spec-runner": "^1.1.1",
     "chai": "^4.2.0",
-    "prettier": "^1.18.2",
-    "ts-node": "^8.4.1",
-    "tslint": "^5.20.0",
-    "typescript": "~3.6.3"
+    "prettier": "^1.19.1",
+    "ts-node": "^8.6.2",
+    "tslint": "^6.0.0",
+    "typescript": "^3.8.3",
+    "typescript-tslint-plugin": "^0.5.5"
   }
 }
