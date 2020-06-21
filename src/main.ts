@@ -24,6 +24,13 @@ export function provideUPI(): UPI.IRegistrationOptions {
         uriFilter: true,
       },
     },
+    commands: {
+      'atom-text-editor': {
+        'ide-haskell-hlint:check-project': async function(editorElement) {
+          return checkFile(editorElement.getModel().getBuffer(), 'dir')
+        },
+      },
+    },
     events: {
       onDidSaveBuffer: (buf) =>
         checkFile(
@@ -77,7 +84,15 @@ async function checkFile(
     const res = await new Promise<HLintResult>((resolve, reject) => {
       const cp = CP.execFile(
         atom.config.get('ide-haskell-hlint').hlintPath,
-        ['--json', '--cross', '--no-exit-code', '--', path],
+        [
+          '--json',
+          '--no-exit-code',
+          ...atom.config
+            .get('ide-haskell-hlint.ignoreGlobs')
+            .map((x) => `--ignore-glob=${cwd}/${x}`),
+          '--',
+          path,
+        ],
         {
           encoding: 'utf-8',
           cwd,
