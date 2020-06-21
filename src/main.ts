@@ -7,12 +7,16 @@ import { unlit } from 'atom-haskell-utils'
 
 export { config } from './config'
 
+type Mode = 'dir' | 'file' | 'stdin'
+
+let globalChildren: { [mode in Mode]?: CP.ChildProcess } | undefined
+
 export function activate(_state: never) {
-  /* no-op */
+  globalChildren = {}
 }
 
 export function deactivate() {
-  /* no-op */
+  globalChildren = undefined
 }
 
 export function provideUPI(): UPI.IRegistrationOptions {
@@ -69,6 +73,8 @@ async function checkFile(
   buf: Atom.TextBuffer,
   mode: 'dir' | 'file' | 'stdin',
 ): Promise<undefined | UPI.IResultItem[]> {
+  // tslint:disable-next-line: no-non-null-assertion
+  if (globalChildren && globalChildren[mode]) globalChildren[mode]!.kill()
   const bufpath = buf.getPath()
   if (!bufpath) return undefined
   const rootpath = atom.project
@@ -110,6 +116,7 @@ async function checkFile(
           }
         },
       )
+      if (globalChildren) globalChildren[mode] = cp
       // tslint:disable-next-line:totality-check
       if (mode === 'stdin') {
         const bufPath = buf.getPath()
@@ -153,21 +160,23 @@ async function checkFile(
     )
   } catch (e) {
     console.warn(e)
-    if (mode === 'dir') {
-      try {
-        return await checkFile(buf, 'file')
-      } catch (e) {
-        console.warn(e)
+    if (!e.killed) {
+      if (mode === 'dir') {
+        try {
+          return await checkFile(buf, 'file')
+        } catch (e) {
+          console.warn(e)
+          atom.notifications.addError(e.toString(), {
+            detail: e.message,
+            dismissable: true,
+          })
+        }
+      } else {
         atom.notifications.addError(e.toString(), {
           detail: e.message,
           dismissable: true,
         })
       }
-    } else {
-      atom.notifications.addError(e.toString(), {
-        detail: e.message,
-        dismissable: true,
-      })
     }
     return undefined
   }
